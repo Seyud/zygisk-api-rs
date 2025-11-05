@@ -7,8 +7,8 @@ use jni::JNIEnv;
 use raw::ZygiskRaw;
 
 pub mod api;
-mod aux;
-pub use aux::*;
+mod auxiliary;
+pub use auxiliary::*;
 pub mod error;
 pub mod raw;
 
