@@ -1,6 +1,6 @@
 use core::ptr::NonNull;
 
-use jni::{JNIEnv, sys::JNINativeMethod};
+use jni::{EnvUnowned, sys::JNINativeMethod};
 use libc::{c_char, c_int, c_long};
 
 use crate::api::{V1, ZygiskApi};
@@ -57,7 +57,7 @@ pub struct ApiTable {
     pub(crate) base: BaseApi<V1>,
 
     pub(crate) hook_jni_native_methods_fn:
-        for<'a> extern "C" fn(JNIEnv<'a>, *const c_char, NonNull<JNINativeMethod>, c_int),
+        for<'a> extern "C" fn(EnvUnowned<'a>, *const c_char, NonNull<JNINativeMethod>, c_int),
     pub(crate) plt_hook_register_fn: unsafe extern "C" fn(
         *const c_char,
         *const c_char,
@@ -82,9 +82,10 @@ impl<'a> ZygiskRaw<'a> for V1 {
             m: &mut RawModule<'a, V1>,
             args: &'a mut transparent::AppSpecializeArgs<'a>,
         ) {
+            let env = unsafe { core::ptr::read(&m.jni_env as *const EnvUnowned) };
             m.dispatch.pre_app_specialize(
                 ZygiskApi::<V1>(m.api_table),
-                unsafe { m.jni_env.unsafe_clone() },
+                env,
                 args,
             );
         }
@@ -93,9 +94,10 @@ impl<'a> ZygiskRaw<'a> for V1 {
             m: &mut RawModule<'a, V1>,
             args: &'a transparent::AppSpecializeArgs<'a>,
         ) {
+            let env = unsafe { core::ptr::read(&m.jni_env as *const EnvUnowned) };
             m.dispatch.post_app_specialize(
                 ZygiskApi::<V1>(m.api_table),
-                unsafe { m.jni_env.unsafe_clone() },
+                env,
                 args,
             );
         }
@@ -104,9 +106,10 @@ impl<'a> ZygiskRaw<'a> for V1 {
             m: &mut RawModule<'a, V1>,
             args: &'a mut transparent::ServerSpecializeArgs<'a>,
         ) {
+            let env = unsafe { core::ptr::read(&m.jni_env as *const EnvUnowned) };
             m.dispatch.pre_server_specialize(
                 ZygiskApi::<V1>(m.api_table),
-                unsafe { m.jni_env.unsafe_clone() },
+                env,
                 args,
             );
         }
@@ -115,9 +118,10 @@ impl<'a> ZygiskRaw<'a> for V1 {
             m: &mut RawModule<'a, V1>,
             args: &'a transparent::ServerSpecializeArgs<'a>,
         ) {
+            let env = unsafe { core::ptr::read(&m.jni_env as *const EnvUnowned) };
             m.dispatch.post_server_specialize(
                 ZygiskApi::<V1>(m.api_table),
-                unsafe { m.jni_env.unsafe_clone() },
+                env,
                 args,
             );
         }

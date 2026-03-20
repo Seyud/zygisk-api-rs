@@ -4,7 +4,7 @@ use std::os::{
     unix::net::UnixStream,
 };
 
-use jni::{JNIEnv, strings::JNIStr, sys::JNINativeMethod};
+use jni::{EnvUnowned, strings::JNIStr, sys::JNINativeMethod};
 use libc::{dev_t, ino_t};
 
 use crate::{error::ZygiskError, impl_sealing::Sealed, utils};
@@ -64,7 +64,7 @@ impl super::ZygiskApi<'_, V4> {
     #[inline(always)]
     pub unsafe fn hook_jni_native_methods(
         &mut self,
-        env: JNIEnv,
+        env: EnvUnowned<'_>,
         class_name: impl Deref<Target = JNIStr>,
         mut methods: impl AsMut<[JNINativeMethod]>,
     ) {
@@ -107,7 +107,7 @@ impl super::ZygiskApi<'_, V4> {
             (self.dispatch().plt_hook_register_fn)(
                 device,
                 inode,
-                symbol.to_bytes_with_nul().as_ptr().cast(),
+                symbol.as_ptr(),
                 replacement.cast(),
                 original,
             )
